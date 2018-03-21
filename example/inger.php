@@ -14,10 +14,22 @@ $vendor = "google";
 $service = "adwords";
 $version = "v201710";
 $method = "deprecated";
+$notify_days_in_advance = 30;
+
+if (isset($argv) && count($argv) == 6) {
+    $inger_version = $argv[1];
+    $vendor = $argv[2];
+    $service = $argv[3];
+    $version = $argv[4];
+    $method = $argv[5];
+}
 
 $full_url = buildURL($base_url, $inger_version, $vendor, $service, $version, $method);
 
-print_r(callAPI($full_url));
+$data = json_decode(callAPI($full_url), true);
+evaluateData($data, $notify_days_in_advance);
+
+exit(0);
 
 /**
  * Builds the full URL string
@@ -54,4 +66,40 @@ function callAPI($url)
     curl_close($curl);
 
     return $result;
+}
+
+/**
+ * Evaluate result
+ *
+ * @param  array $data Result data
+ * @param  int   $days Days
+ * @return void
+ */
+function evaluateData($data, $days)
+{
+    if (!is_array($data) || !isset($data[0]) || strlen($data[0]) != 10) {
+	print("No valid date found");
+    }
+
+    $api_date = date_create($data[0]);
+    $now = date_create();
+
+    $interval = date_diff($now, $api_date);
+    $diff = $interval->days;
+
+    if ($interval->invert == 1) {
+	$diff = -1 * abs($diff);
+    }
+
+    if ($diff > $days) {
+	printf("No action required.");
+    }
+
+    if ($diff <= 0) {
+	printf("API deprecated. Immediate action required.");
+    }
+
+    if ($diff > 0 && $diff <= $days) {
+	printf("API gets deprecated in $diff days. Action required.");
+    }
 }
