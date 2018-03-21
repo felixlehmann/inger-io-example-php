@@ -7,7 +7,7 @@
  *     php inger.php v1 google adwords v201710 deprecated
  */
 
-$base_url = "http://inger.io";
+$base_url = "https://inger.io";
 // default example values
 $inger_version = "v1";
 $vendor = "google";
