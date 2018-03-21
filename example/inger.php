@@ -27,7 +27,14 @@ if (isset($argv) && count($argv) == 6) {
 $full_url = buildURL($base_url, $inger_version, $vendor, $service, $version, $method);
 
 $data = json_decode(callAPI($full_url), true);
-evaluateData($data, $notify_days_in_advance);
+
+if (is_array($data)) {
+    evaluateData($data, $notify_days_in_advance);
+}
+
+if (is_string($data)) {
+    print($data);
+}
 
 exit(0);
 
@@ -79,6 +86,7 @@ function evaluateData($data, $days)
 {
     if (!is_array($data) || !isset($data[0]) || strlen($data[0]) != 10) {
 	print("No valid date found");
+	exit(1);
     }
 
     $api_date = date_create($data[0]);
